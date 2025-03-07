@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&family=Public+Sans:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+    --primary: 210 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 210 70% 50%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white border border-white/20;
+  }
+
+  .word-cloud-container {
+    @apply relative w-full h-[400px] max-w-[1500px] mx-auto mt-2 mb-8 overflow-hidden rounded-xl p-8;
+  }
+
+  .mp-search-container {
+    @apply relative w-full max-w-2xl mx-auto;
+  }
+
+  .search-input {
+    @apply w-full px-6 py-4 bg-white border border-white/20 rounded-full 
+    focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all duration-300;
+  }
+
+  .search-button {
+    @apply absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-primary 
+    text-white hover:bg-primary/90 transition-all duration-300;
+  }
+
+  .word-cloud-word {
+    @apply absolute transition-all duration-500 ease-in-out font-heading;
+  }
+
+  .mp-profile {
+    @apply glass rounded-xl p-6 max-w-2xl mx-auto mb-8 animate-scale-in;
+  }
+
+  .fallback-avatar {
+    @apply bg-primary/10 flex items-center justify-center;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
