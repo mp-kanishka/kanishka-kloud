@@ -1,13 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { WordCloudItem } from "@/types";
 import { checkOverlap, calculateFontSize } from "@/utils/wordCloudUtils";
+import { Download } from "lucide-react";
+import html2canvas from 'html2canvas';
 
 interface WordCloudProps {
   words: WordCloudItem[];
   loading: boolean;
 }
 
-const WordCloud = ({ words, loading }: WordCloudProps) => {
+export interface WordCloudRef {
+  saveImage: () => Promise<void>;
+}
+
+const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [renderedWords, setRenderedWords] = useState<(WordCloudItem & { x: number; y: number; fontSize: number })[]>([]);
   const [valueRange, setValueRange] = useState<{ minValue: number; maxValue: number }>({ minValue: 0, maxValue: 0 });
@@ -209,6 +215,276 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [words, isMobile]);
 
+  const handleSaveImage = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      // Create a temporary canvas with MacBook Pro 13-inch M2 resolution
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Set dimensions to match MacBook Pro 13-inch M2 resolution
+      const width = 2560;  // MacBook Pro 13-inch M2 width
+      const height = 1600; // MacBook Pro 13-inch M2 height
+      canvas.width = width;
+      canvas.height = height;
+
+      // Fill background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      // Create a temporary container for the word cloud
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.width = `${width}px`;
+      tempContainer.style.height = `${height}px`;
+      tempContainer.style.background = '#ffffff';
+      document.body.appendChild(tempContainer);
+
+      // Create a new div for the word cloud with proper styling
+      const wordCloudDiv = document.createElement('div');
+      wordCloudDiv.style.position = 'absolute';
+      wordCloudDiv.style.width = '100%';
+      wordCloudDiv.style.height = '100%';
+      wordCloudDiv.style.display = 'flex';
+      wordCloudDiv.style.alignItems = 'center';
+      wordCloudDiv.style.justifyContent = 'center';
+      tempContainer.appendChild(wordCloudDiv);
+
+      // Calculate word positions specifically for the image generation
+      const calculateImageWordPositions = () => {
+        const sortedWords = [...words].sort((a, b) => b.value - a.value);
+        const values = words.map((word) => word.value);
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const significanceThreshold = minValue + (maxValue - maxValue) * 0.3;
+
+        const placedWords: Array<{ word: WordCloudItem; x: number; y: number; fontSize: number }> = [];
+        const placedRects: Array<{ x: number; y: number; width: number; height: number }> = [];
+
+        // Calculate oval parameters for the new resolution
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const ovalRadiusX = width * 0.47;
+        const ovalRadiusY = height * 0.37;
+
+        // Helper function to check if a rectangle overlaps with existing ones
+        const checkOverlap = (rect: { x: number; y: number; width: number; height: number }) => {
+          return placedRects.some(placed => {
+            const padding = Math.min(6, rect.width * 0.08);
+            return !(
+              rect.x + rect.width + padding < placed.x ||
+              rect.x > placed.x + placed.width + padding ||
+              rect.y + rect.height + padding < placed.y ||
+              rect.y > placed.y + placed.height + padding
+            );
+          });
+        };
+
+        // Function to check if a point is within the oval boundary
+        const isWithinOvalBoundary = (x: number, y: number, wordWidth: number, wordHeight: number) => {
+          const corners = [
+            { x: x - wordWidth/2, y: y - wordHeight/2 },
+            { x: x + wordWidth/2, y: y - wordHeight/2 },
+            { x: x - wordWidth/2, y: y + wordHeight/2 },
+            { x: x + wordWidth/2, y: y + wordHeight/2 }
+          ];
+
+          const safetyMargin = 0.98;
+
+          return corners.every(corner => {
+            const normalizedX = (corner.x - centerX) / (ovalRadiusX * safetyMargin);
+            const normalizedY = (corner.y - centerY) / (ovalRadiusY * safetyMargin);
+            return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
+          });
+        };
+
+        // Function to check if a word is away from edges with proper padding
+        const isAwayFromEdges = (rect: { x: number; y: number; width: number; height: number }) => {
+          const edgePadding = 35;
+          return (
+            rect.x >= edgePadding &&
+            rect.y >= edgePadding &&
+            rect.x + rect.width <= width - edgePadding &&
+            rect.y + rect.height <= height - edgePadding
+          );
+        };
+
+        sortedWords.forEach((word) => {
+          // Use consistent font size calculation for image generation
+          const baseFontSize = calculateFontSize(word.value, minValue, maxValue);
+          const fontSize = baseFontSize * (width / 1600); // Scale font size based on target width
+          const wordWidth = word.text.length * fontSize * 0.6;
+          const wordHeight = fontSize * 1.2;
+
+          let placed = false;
+          let attempts = 0;
+          const maxAttempts = 200;
+          let finalX = 0;
+          let finalY = 0;
+          let spiralAngle = Math.random() * Math.PI * 2;
+          let spiralRadius = 0;
+
+          while (!placed && attempts < maxAttempts) {
+            spiralRadius = (attempts / maxAttempts) * Math.max(ovalRadiusX, ovalRadiusY);
+            spiralAngle += Math.PI / 2.2;
+
+            const x = centerX + Math.cos(spiralAngle) * spiralRadius;
+            const y = centerY + Math.sin(spiralAngle) * spiralRadius;
+
+            const rect = {
+              x: x - wordWidth / 2,
+              y: y - wordHeight / 2,
+              width: wordWidth,
+              height: wordHeight
+            };
+
+            if (isWithinOvalBoundary(x, y, wordWidth, wordHeight) && 
+                isAwayFromEdges(rect) && 
+                !checkOverlap(rect)) {
+              placed = true;
+              finalX = x;
+              finalY = y;
+              placedRects.push(rect);
+            }
+
+            attempts++;
+          }
+
+          if (placed) {
+            placedWords.push({ word, x: finalX, y: finalY, fontSize });
+          }
+        });
+
+        return placedWords;
+      };
+
+      // Generate word positions for the image
+      const imageWords = calculateImageWordPositions();
+
+      // Render words in the temporary container
+      imageWords.forEach(({ word, x, y, fontSize }) => {
+        const wordElement = document.createElement('div');
+        const significance = (word.value - valueRange.minValue) / (valueRange.maxValue - valueRange.minValue);
+        
+        wordElement.style.position = 'absolute';
+        wordElement.style.left = `${x}px`;
+        wordElement.style.top = `${y}px`;
+        wordElement.style.fontSize = `${fontSize}px`;
+        wordElement.style.fontFamily = '"League Spartan", sans-serif';
+        wordElement.style.color = word.color || '#000';
+        wordElement.style.fontWeight = significance > 0.5 ? 'bold' : '500';
+        wordElement.style.opacity = '1';
+        wordElement.style.transform = 'translate(-50%, -50%)';
+        wordElement.textContent = word.text;
+        
+        wordCloudDiv.appendChild(wordElement);
+      });
+
+      // Wait for fonts to load and elements to render
+      await document.fonts.ready;
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Convert word cloud to image with higher scale for better quality
+      const data = await html2canvas(tempContainer, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Keep scale at 2 for high quality
+        logging: false,
+        allowTaint: true,
+        useCORS: true,
+        onclone: (clonedDoc) => {
+          const clonedContainer = clonedDoc.querySelector('div') as HTMLElement;
+          if (clonedContainer) {
+            clonedContainer.style.transform = 'none';
+          }
+        }
+      });
+
+      // Clean up temporary elements
+      document.body.removeChild(tempContainer);
+
+      // Draw the word cloud onto our canvas
+      ctx.drawImage(data, 0, 0, width, height);
+
+      // Add MP details at the bottom
+      const mpName = document.querySelector('.mp-profile h2')?.textContent || 'unknown-mp';
+      const sanitizedMpName = mpName
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+        .replace(/[^A-Za-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+
+      // Add a subtle separator line
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.lineWidth = 2; // Slightly thicker line for higher resolution
+      ctx.beginPath();
+      ctx.moveTo(60, height - 120); // Adjusted for new resolution
+      ctx.lineTo(width - 60, height - 120);
+      ctx.stroke();
+
+      // Add MP details with party color - adjusted font sizes
+      ctx.font = 'bold 48px "League Spartan"'; // Increased font size
+      ctx.fillStyle = '#000';
+      ctx.fillText(mpName, 60, height - 70);
+
+      // Add party and constituency - adjusted font sizes
+      ctx.font = '32px "League Spartan"';
+      
+      // Draw party badge
+      const mpParty = document.querySelector('.mp-profile .rounded-full')?.textContent;
+      if (mpParty) {
+        const partyWidth = ctx.measureText(mpParty).width + 32; // Adjusted padding
+        ctx.fillStyle = mpParty ? '#000' : '#666';
+        ctx.beginPath();
+        ctx.roundRect(60, height - 50, partyWidth, 48, 24); // Adjusted size
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.fillText(mpParty, 76, height - 20);
+      }
+
+      // Add constituency
+      const mpConstituency = document.querySelector('.mp-profile .text-muted-foreground')?.textContent;
+      if (mpConstituency) {
+        ctx.fillStyle = '#666';
+        ctx.fillText(mpConstituency, mpParty ? 60 + ctx.measureText(mpParty).width + 80 : 60, height - 20);
+      }
+
+      // Add watermark with adjusted size
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.font = 'bold 80px "League Spartan"'; // Increased font size
+      const watermarkText = 'Westminster Word Cloud';
+      const watermarkWidth = ctx.measureText(watermarkText).width;
+      ctx.fillText(watermarkText, width - watermarkWidth - 60, 100); // Adjusted position
+
+      // Convert to blob and download
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/png', 1.0); // Maximum quality
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Cloud-${sanitizedMpName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Error saving image:', error);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    saveImage: handleSaveImage
+  }));
+
   if (loading) {
     return (
       <div className="word-cloud-container glass flex items-center justify-center">
@@ -231,53 +507,55 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
   }
   
   return (
-    <div 
-      ref={containerRef} 
-      className={`word-cloud-container glass relative ${isMobile ? 'overflow-x-auto overflow-y-hidden max-w-none' : 'md:overflow-hidden'} touch-none`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="relative">
       <div 
-        className={`absolute inset-0 transition-transform duration-100 md:w-full md:h-full md:left-0 md:top-0 ${
-          isMobile 
-            ? isLandscape 
-              ? 'w-[100vw] h-[100vh]' 
-              : 'w-[100vw] h-[100vh]'
-            : 'w-[150%] h-[150%] -left-[25%] -top-[25%]'
-        }`}
-        style={{
-          transform: `translate(${transform.x}px, ${transform.y}px) scale(${isMobile ? 1 : transform.scale})`,
-          transformOrigin: 'center center',
-          touchAction: 'none'
-        }}
+        ref={containerRef} 
+        className={`word-cloud-container glass relative ${isMobile ? 'overflow-x-auto overflow-y-hidden max-w-none' : 'md:overflow-hidden'} touch-none`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        {renderedWords.map((word, index) => {
-          const significance = (word.value - valueRange.minValue) / (valueRange.maxValue - valueRange.minValue);
-          const opacity = 0.7 + significance * 0.3;
-          
-          return (
-            <div
-              key={`${word.text}-${index}`}
-              className="word-cloud-word absolute transition-all duration-500 hover:scale-110"
-              style={{
-                left: `${word.x}px`,
-                top: `${word.y}px`,
-                fontSize: `${word.fontSize}px`,
-                color: word.color || '#000',
-                opacity: 0,
-                fontWeight: significance > 0.5 ? 'bold' : 'normal',
-                textShadow: significance > 0.7 ? '0 0 1px rgba(0,0,0,0.2)' : 'none',
-                animation: `fade-in 0.5s ease-out ${index * 0.02}s forwards`,
-              }}
-            >
-              {word.text}
-            </div>
-          );
-        })}
+        <div 
+          className={`word-cloud-content absolute inset-0 transition-transform duration-100 md:w-full md:h-full md:left-0 md:top-0 ${
+            isMobile 
+              ? isLandscape 
+                ? 'w-[100vw] h-[100vh]' 
+                : 'w-[100vw] h-[100vh]'
+              : 'w-[150%] h-[150%] -left-[25%] -top-[25%]'
+          }`}
+          style={{
+            transform: `translate(${transform.x}px, ${transform.y}px) scale(${isMobile ? 1 : transform.scale})`,
+            transformOrigin: 'center center',
+            touchAction: 'none'
+          }}
+        >
+          {renderedWords.map((word, index) => {
+            const significance = (word.value - valueRange.minValue) / (valueRange.maxValue - valueRange.minValue);
+            const opacity = 0.7 + significance * 0.3;
+            
+            return (
+              <div
+                key={`${word.text}-${index}`}
+                className="word-cloud-word absolute transition-all duration-500 hover:scale-110"
+                style={{
+                  left: `${word.x}px`,
+                  top: `${word.y}px`,
+                  fontSize: `${word.fontSize}px`,
+                  color: word.color || '#000',
+                  opacity: 0,
+                  fontWeight: significance > 0.5 ? 'bold' : 'normal',
+                  textShadow: significance > 0.7 ? '0 0 1px rgba(0,0,0,0.2)' : 'none',
+                  animation: `fade-in 0.5s ease-out ${index * 0.02}s forwards`,
+                }}
+              >
+                {word.text}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
-};
+});
 
 export default WordCloud;

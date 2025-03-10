@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Info } from "lucide-react";
+import { Info, Download } from "lucide-react";
 import SearchBox from "@/components/SearchBox";
 import MPProfile from "@/components/MPProfile";
-import WordCloud from "@/components/WordCloud";
+import WordCloud, { WordCloudRef } from "@/components/WordCloud";
 import { MP, WordCloudItem } from "@/types";
 import { getMPSpeeches } from "@/services/hansardApi";
 import { getWordCloudItems } from "@/utils/wordCloudUtils";
 
 const Index = () => {
+  const wordCloudRef = useRef<WordCloudRef>(null);
   const [selectedMP, setSelectedMP] = useState<MP | null>(null);
   const [wordCloudData, setWordCloudData] = useState<WordCloudItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,12 @@ const Index = () => {
       console.error("Error generating word cloud:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveImage = async () => {
+    if (wordCloudRef.current) {
+      await wordCloudRef.current.saveImage();
     }
   };
 
@@ -86,7 +93,7 @@ const Index = () => {
                 </p>
               </div>
             ) : (
-              <WordCloud words={wordCloudData} loading={loading} />
+              <WordCloud ref={wordCloudRef} words={wordCloudData} loading={loading} />
             )}
           </div>
         </>
@@ -99,6 +106,16 @@ const Index = () => {
       >
         <Info className="w-5 h-5 text-gray-600" />
       </Link>
+
+      {wordCloudData.length > 0 && (
+        <button
+          onClick={handleSaveImage}
+          className="fixed bottom-6 right-6 z-50 p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-300"
+          aria-label="Download word cloud"
+        >
+          <Download className="w-5 h-5" />
+        </button>
+      )}
     </div>
   );
 };

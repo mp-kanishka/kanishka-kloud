@@ -47,7 +47,7 @@
   }
 
   .word-cloud-container {
-    @apply relative w-full h-[700px] max-md:landscape:h-[80vh] md:h-[400px] max-w-[1500px] mx-auto mt-0 mb-8 overflow-hidden rounded-xl p-2;
+    @apply relative w-full h-[700px] max-md:landscape:h-[80vh] max-md:portrait:h-[400px] md:h-[400px] max-w-[1500px] mx-auto mt-0 mb-8 overflow-hidden rounded-xl p-2;
   }
 
   .mp-search-container {

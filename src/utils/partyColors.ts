@@ -6,107 +6,107 @@ export type PartyColor = {
 export const PARTY_COLORS: Record<string, PartyColor> = {
   "labour": {
     base: "#E4003B",
-    gradient: ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"]
+    gradient: ["#E4003B", "#FF1F1F", "#FF4040", "#FF6060"]
   },
   "labour (co-op)": {
     base: "#E4003B",
-    gradient: ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"]
+    gradient: ["#E4003B", "#FF1F1F", "#FF4040", "#FF6060"]
   },
   "conservative": {
     base: "#0087dc",
-    gradient: ["#0087dc", "#4DA6FF", "#80BFFF", "#B3D9FF", "#CCE6FF"]
+    gradient: ["#0087dc", "#0066CC", "#0080FF", "#3399FF"]
   },
   "reform uk": {
     base: "#00bed6",
-    gradient: ["#00bed6", "#4DD9ED", "#80E5F3", "#B3F0F9", "#CCF6FB"]
+    gradient: ["#00bed6", "#00A3B8", "#00C4D6", "#00D6E6"]
   },
   "reform": {
     base: "#00bed6",
-    gradient: ["#00bed6", "#4DD9ED", "#80E5F3", "#B3F0F9", "#CCF6FB"]
+    gradient: ["#00bed6", "#00A3B8", "#00C4D6", "#00D6E6"]
   },
   "liberal democrat": {
     base: "#FAA61A",
-    gradient: ["#FAA61A", "#FFC04D", "#FFD280", "#FFE0B3", "#FFEACC"]
+    gradient: ["#FAA61A", "#FF8C00", "#FFA500", "#FFB732"]
   },
   "liberal democrats": {
     base: "#FAA61A",
-    gradient: ["#FAA61A", "#FFC04D", "#FFD280", "#FFE0B3", "#FFEACC"]
+    gradient: ["#FAA61A", "#FF8C00", "#FFA500", "#FFB732"]
   },
   "green": {
     base: "#4BA562",
-    gradient: ["#4BA562", "#7BC08C", "#A3D5B6", "#CBEADF", "#E2F4E9"]
+    gradient: ["#4BA562", "#3D8B50", "#45A85C", "#55B96C"]
   },
   "green party": {
     base: "#4BA562",
-    gradient: ["#4BA562", "#7BC08C", "#A3D5B6", "#CBEADF", "#E2F4E9"]
+    gradient: ["#4BA562", "#3D8B50", "#45A85C", "#55B96C"]
   },
   "democratic unionist party": {
     base: "#B84148",
-    gradient: ["#B84148", "#D17A80", "#E0A3A8", "#EFCCCF", "#F7E6E7"]
+    gradient: ["#B84148", "#A63940", "#CC4751", "#D65A64"]
   },
   "dup": {
     base: "#B84148",
-    gradient: ["#B84148", "#D17A80", "#E0A3A8", "#EFCCCF", "#F7E6E7"]
+    gradient: ["#B84148", "#A63940", "#CC4751", "#D65A64"]
   },
   "scottish national party": {
     base: "#D7C919",
-    gradient: ["#F5E884", "#E6D94F", "#D7CA1A", "#C8BB00", "#B9AC00"]
+    gradient: ["#D7C919", "#CCB800", "#E6D000", "#F5DE00"]
   },
   "snp": {
     base: "#D7C919",
-    gradient: ["#F5E884", "#E6D94F", "#D7CA1A", "#C8BB00", "#B9AC00"]
+    gradient: ["#D7C919", "#CCB800", "#E6D000", "#F5DE00"]
   },
   "plaid cymru": {
     base: "#003831",
-    gradient: ["#003831", "#004C42", "#006054", "#007466", "#008878"]
+    gradient: ["#003831", "#004C42", "#006054", "#007466"]
   },
   "traditional unionist voice": {
     base: "#0C3A6A",
-    gradient: ["#0C3A6A", "#1E4C7C", "#305E8E", "#4270A0", "#5482B2"]
+    gradient: ["#0C3A6A", "#0D2B4D", "#0E4C8A", "#0F5CA6"]
   },
   "tuv": {
     base: "#0C3A6A",
-    gradient: ["#0C3A6A", "#1E4C7C", "#305E8E", "#4270A0", "#5482B2"]
+    gradient: ["#0C3A6A", "#0D2B4D", "#0E4C8A", "#0F5CA6"]
   },
   "ulster unionist party": {
     base: "#47A5EE",
-    gradient: ["#47A5EE", "#69B4F1", "#8BC3F4", "#ADD2F7", "#CFE1FA"]
+    gradient: ["#47A5EE", "#2B8CD6", "#1F99FF", "#3AA9FF"]
   },
   "uup": {
     base: "#47A5EE",
-    gradient: ["#47A5EE", "#69B4F1", "#8BC3F4", "#ADD2F7", "#CFE1FA"]
+    gradient: ["#47A5EE", "#2B8CD6", "#1F99FF", "#3AA9FF"]
   },
   "alliance party": {
     base: "#F6CB2E",
-    gradient: ["#F6CB2E", "#F7D353", "#F8DB78", "#F9E39D", "#FAEBC2"]
+    gradient: ["#F6CB2E", "#E6B800", "#FFD700", "#FFCC00"]
   },
   "alliance": {
     base: "#F6CB2E",
-    gradient: ["#F6CB2E", "#F7D353", "#F8DB78", "#F9E39D", "#FAEBC2"]
+    gradient: ["#F6CB2E", "#E6B800", "#FFD700", "#FFCC00"]
   },
   "alliance party of northern ireland": {
     base: "#F6CB2E",
-    gradient: ["#F6CB2E", "#F7D353", "#F8DB78", "#F9E39D", "#FAEBC2"]
+    gradient: ["#F6CB2E", "#E6B800", "#FFD700", "#FFCC00"]
   },
   "social democratic & labour party": {
     base: "#29A82B",
-    gradient: ["#29A82B", "#4EB650", "#73C475", "#98D29A", "#BDE1BF"]
+    gradient: ["#29A82B", "#1F8C21", "#2DBF30", "#33CC36"]
   },
   "sdlp": {
     base: "#29A82B",
-    gradient: ["#29A82B", "#4EB650", "#73C475", "#98D29A", "#BDE1BF"]
+    gradient: ["#29A82B", "#1F8C21", "#2DBF30", "#33CC36"]
   },
   "independent": {
     base: "#8E9196",
-    gradient: ["#8E9196", "#A1A3A7", "#B4B5B8", "#C7C8CA", "#DADBDC"]
+    gradient: ["#8E9196", "#6F7276", "#9EA1A6", "#AAACB0"]
   },
   "independents": {
     base: "#8E9196",
-    gradient: ["#8E9196", "#A1A3A7", "#B4B5B8", "#C7C8CA", "#DADBDC"]
+    gradient: ["#8E9196", "#6F7276", "#9EA1A6", "#AAACB0"]
   },
   "speaker": {
     base: "#1F1F1F",
-    gradient: ["#1F1F1F", "#2F2F2F", "#3F3F3F", "#4F4F4F", "#5F5F5F"]
+    gradient: ["#1F1F1F", "#2F2F2F", "#3F3F3F", "#4F4F4F"]
   }
 };
 
