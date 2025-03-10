@@ -16,10 +16,23 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [lastScale, setLastScale] = useState(1);
   const animationFrameRef = useRef<number>();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+
+  useEffect(() => {
+    const checkMobileAndOrientation = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    checkMobileAndOrientation();
+    window.addEventListener('resize', checkMobileAndOrientation);
+    return () => window.removeEventListener('resize', checkMobileAndOrientation);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Pinch to zoom
+    if (!isMobile && e.touches.length === 2) {
+      // Pinch to zoom (desktop only)
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -38,8 +51,8 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Pinch to zoom
+    if (!isMobile && e.touches.length === 2) {
+      // Pinch to zoom (desktop only)
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -50,11 +63,13 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
       setTransform(prev => ({ ...prev, scale: newScale }));
       setLastScale(distance);
     } else if (e.touches.length === 1 && isDragging) {
-      // Pan
+      // Pan - on mobile, only allow horizontal movement
+      const newX = e.touches[0].clientX - startPos.x;
+      const newY = isMobile ? transform.y : e.touches[0].clientY - startPos.y;
       setTransform(prev => ({
         ...prev,
-        x: e.touches[0].clientX - startPos.x,
-        y: e.touches[0].clientY - startPos.y
+        x: newX,
+        y: newY
       }));
     }
   };
@@ -76,9 +91,11 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
     if (!words.length || !containerRef.current) return;
 
     const container = containerRef.current;
-    const containerWidth = container.clientWidth;
+    const containerWidth = isMobile 
+      ? (isLandscape ? 600 : Math.max(800, window.innerWidth * 1.5))
+      : container.clientWidth;
     const containerHeight = container.clientHeight;
-    const padding = 32; // 8rem padding
+    const padding = isMobile ? 48 : 32; // Increased padding for mobile
     const centerX = containerWidth / 2;
     const centerY = containerHeight / 2;
 
@@ -93,7 +110,15 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
     const significanceThreshold = minValue + (maxValue - minValue) * 0.3;
 
     sortedWords.forEach((word) => {
-      const fontSize = calculateFontSize(word.value, minValue, maxValue);
+      // Adjust font size for mobile and landscape
+      const baseFontSize = calculateFontSize(word.value, minValue, maxValue);
+      let fontSize = baseFontSize;
+      if (isMobile) {
+        fontSize = isLandscape ? baseFontSize * 0.35 : baseFontSize * 0.5; // More reduction in landscape
+      } else {
+        fontSize = baseFontSize * 0.6; // Reduce desktop font size
+      }
+      
       const wordWidth = word.text.length * fontSize * 0.6;
       const wordHeight = fontSize * 1.2;
 
@@ -111,12 +136,10 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
         const spiralAngle = baseAngle + attempts * 0.05;
         const radius = startingRadius + attempts * radiusIncrement;
         
-        // Calculate position with oval shape adjustment
         const cosAngle = Math.cos(spiralAngle);
         const sinAngle = Math.sin(spiralAngle);
         const cornerFactor = Math.min(Math.abs(cosAngle), Math.abs(sinAngle));
         
-        // Adjust radius based on angle to create oval shape
         const adjustedRadius = radius * (1 - cornerFactor * 0.3);
         
         x = centerX + cosAngle * adjustedRadius - wordWidth / 2;
@@ -138,7 +161,7 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
               checkOverlap(
                 x, y, wordWidth, wordHeight,
                 placedWord.x, placedWord.y, placedWordWidth, placedWordHeight,
-                isImportantWord ? 0 : (1 - cornerFactor * 0.5) // Tighter spacing in corners
+                isImportantWord ? 0 : (1 - cornerFactor * 0.5)
               )
             ) {
               collision = true;
@@ -173,24 +196,25 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
 
   useEffect(() => {
     calculateWordPositions();
-  }, [words]);
+  }, [words, isMobile]);
 
-  // Add resize handler
   useEffect(() => {
     const handleResize = () => {
-      calculateWordPositions();
+      if (!isMobile) {
+        calculateWordPositions();
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [words]);
+  }, [words, isMobile]);
 
   if (loading) {
     return (
       <div className="word-cloud-container glass flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin mb-4"></div>
-          <p className="text-muted-foreground">Analyzing speeches...</p>
+          <p className="text-muted-foreground">Analysing speeches...</p>
         </div>
       </div>
     );
@@ -209,15 +233,21 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
   return (
     <div 
       ref={containerRef} 
-      className="word-cloud-container glass relative md:overflow-hidden touch-none"
+      className={`word-cloud-container glass relative ${isMobile ? 'overflow-x-auto overflow-y-hidden max-w-none' : 'md:overflow-hidden'} touch-none`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       <div 
-        className="absolute inset-0 transition-transform duration-100 md:w-full md:h-full md:left-0 md:top-0 w-[150%] h-[150%] -left-[25%] -top-[25%]"
+        className={`absolute inset-0 transition-transform duration-100 md:w-full md:h-full md:left-0 md:top-0 ${
+          isMobile 
+            ? isLandscape 
+              ? 'w-[600px] h-[200%] -top-[50%]' 
+              : 'w-[150vw] h-[150%] -top-[15%] -left-[25vw]'
+            : 'w-[150%] h-[150%] -left-[25%] -top-[45%]'
+        }`}
         style={{
-          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+          transform: `translate(${transform.x}px, ${transform.y}px) scale(${isMobile ? 1 : transform.scale})`,
           transformOrigin: 'center center',
           touchAction: 'none'
         }}

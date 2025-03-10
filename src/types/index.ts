@@ -1,6 +1,6 @@
-
 export interface MP {
   id: string;
+  person_id: string;
   name: string;
   party?: string;
   constituency?: string;

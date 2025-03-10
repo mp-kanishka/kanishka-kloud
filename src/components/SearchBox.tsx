@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, RotateCw } from "lucide-react";
 import { MP } from "@/types";
 import { searchMP } from "@/services/hansardApi";
+import { getPartyColor } from "@/utils/partyColors";
 
 interface SearchBoxProps {
   onSelectMP: (mp: MP) => void;
@@ -24,33 +25,10 @@ const SearchBox = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Function to get party text color
-  const getPartyColor = (party?: string) => {
+  const getPartyTextColor = (party?: string) => {
     if (!party) return "text-primary";
-    
-    switch (party.toLowerCase()) {
-      case "labour":
-      case "labour (co-op)":
-        return "text-[#E4003B]";
-      case "conservative":
-        return "text-[#0087dc]";
-      case "reform uk":
-      case "reform":
-        return "text-[#00bed6]";
-      case "liberal democrat":
-      case "liberal democrats":
-        return "text-[#FAA61A]";
-      case "green":
-      case "green party":
-        return "text-[#4BA562]";
-      case "democratic unionist party":
-      case "dup":
-        return "text-[#B84148]";
-      case "independent":
-      case "independents":
-        return "text-[#8E9196]";
-      default:
-        return "text-primary";
-    }
+    const color = getPartyColor(party);
+    return `text-[${color}]`;
   };
 
   const handleSearch = useCallback(async (searchQuery: string) => {
@@ -187,7 +165,7 @@ const SearchBox = ({
                   <div>
                     <p className="font-medium">{mp.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {mp.party && <span className={getPartyColor(mp.party)}>{mp.party}</span>}
+                      {mp.party && <span className={getPartyTextColor(mp.party)}>{mp.party}</span>}
                       {mp.constituency && mp.party && " · "}
                       {mp.constituency}
                     </p>

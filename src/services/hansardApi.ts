@@ -9,7 +9,7 @@ const BASE_URL = "https://api.parliament.uk/search/";
 const CURRENT_PARLIAMENT_START = new Date("2025-07-17");
 
 /**
- * Search for MPs by name, constituency, or party - now using local data
+ * Search for MPs by name, constituency, or party
  */
 export const searchMP = async (searchTerm: string): Promise<MP[]> => {
   return searchLocalMP(searchTerm);
@@ -22,8 +22,8 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
   try {
     const mp = getMPById(mpId);
     
-    if (!mp || !mp.name) {
-      throw new Error("Could not find MP name");
+    if (!mp || !mp.person_id) {
+      throw new Error("Could not find MP person_id");
     }
     
     const speakerStats: SpeakerStats = await fetch('/cleaned_speaker_statistics.json')
@@ -33,43 +33,15 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
         }
         return response.json();
       })
-      .catch(() => ({}));
-    
-    const speakerEntries = Object.entries(speakerStats);
-    
-    const normalizeName = (name: string): string => {
-      return name.toLowerCase()
-        .replace(/^(mr|mrs|ms|dr|sir|dame)\s+/, '')
-        .replace(/[^a-z0-9\s]/g, '')
-        .trim();
-    };
-
-    let speakerData = speakerEntries.find(([speakerName]) => {
-      const nameParts = speakerName.split(',').map(part => part.trim());
-      if (nameParts.length === 2) {
-        const [lastName, firstName] = nameParts;
-        const fullName = `${firstName} ${lastName}`;
-        return normalizeName(fullName) === normalizeName(mp.name);
-      }
-      return false;
-    });
-    
-    if (!speakerData) {
-      const mpLastName = normalizeName(mp.name).split(' ').pop();
-      speakerData = speakerEntries.find(([speakerName]) => {
-        const speakerLastName = normalizeName(speakerName.split(',')[0].trim());
-        return speakerLastName === mpLastName;
+      .catch((error) => {
+        console.error('Error loading speaker statistics:', error);
+        return {};
       });
-    }
 
-    if (!speakerData) {
-      const normalizedMPName = normalizeName(mp.name);
-      speakerData = speakerEntries.find(([speakerName]) => {
-        const normalizedSpeakerName = normalizeName(speakerName);
-        return normalizedSpeakerName.includes(normalizedMPName) || 
-               normalizedMPName.includes(normalizedSpeakerName);
-      });
-    }
+    // Find speaker data by matching person_id
+    const speakerData = Object.entries(speakerStats).find(([_, stats]) => 
+      (stats as any).person_id === mp.person_id
+    );
     
     if (speakerData) {
       const [_, data] = speakerData;
@@ -105,6 +77,7 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
       pageSize: 1
     };
   } catch (error) {
+    console.error('Error in getMPSpeeches:', error);
     return getMockSpeeches(mpId);
   }
 };
@@ -139,28 +112,32 @@ const getMockMPs = (searchTerm: string): MP[] => {
   // Updated mock data to include only current Commons MPs
   const mockMPs = [
     {
-      id: "4474",
+      id: "uk.org.publicwhip/person/4474",
+      person_id: "uk.org.publicwhip/person/4474",
       name: "Rishi Sunak",
       party: "Conservative",
       constituency: "Richmond (Yorks) - current",
       imageUrl: "https://members-api.parliament.uk/api/members/4474/Portrait?cropType=ThreeFour"
     },
     {
-      id: "3724",
+      id: "uk.org.publicwhip/person/3724",
+      person_id: "uk.org.publicwhip/person/3724",
       name: "Keir Starmer",
       party: "Labour",
       constituency: "Holborn and St Pancras - current",
       imageUrl: "https://members-api.parliament.uk/api/members/3724/Portrait?cropType=ThreeFour"
     },
     {
-      id: "4138",
+      id: "uk.org.publicwhip/person/4138",
+      person_id: "uk.org.publicwhip/person/4138",
       name: "Liz Truss",
       party: "Conservative",
       constituency: "South West Norfolk - current",
       imageUrl: "https://members-api.parliament.uk/api/members/4138/Portrait?cropType=ThreeFour"
     },
     {
-      id: "4651",
+      id: "uk.org.publicwhip/person/4651",
+      person_id: "uk.org.publicwhip/person/4651",
       name: "Angela Rayner",
       party: "Labour",
       constituency: "Ashton-under-Lyne - current",
@@ -185,52 +162,24 @@ const getMockMPs = (searchTerm: string): MP[] => {
  * Provide mock speech data for demonstration when APIs fail
  */
 const getMockSpeeches = (mpId: string): HansardResponse => {
-  // Sample speeches with varying content for different MPs
-  const speeches: Record<string, string[]> = {
-    "1423": [ // Boris Johnson
-      "We will get Brexit done and unleash Britain's potential.",
-      "We are leveling up across the United Kingdom, investing in infrastructure, education and technology.",
-      "The vaccination program has been a tremendous success, thanks to our brilliant NHS staff.",
-      "Global Britain is open for business and ready to forge new partnerships around the world.",
-      "We need to build back better, greener, and more resilient after the pandemic."
-    ],
-    "4474": [ // Rishi Sunak
-      "Economic stability is the foundation of our plan for growth.",
-      "We must be fiscally responsible while investing in the future of our country.",
-      "The cost of living is the most pressing challenge facing families today.",
-      "Innovation and technology will drive productivity growth in our economy.",
-      "We are supporting businesses with tax incentives to boost investment and job creation."
-    ],
-    "3724": [ // Keir Starmer
-      "The government has broken its promises to the British people time and again.",
-      "We need a proper plan to tackle the NHS crisis and reduce waiting lists.",
-      "Workers' rights and protections must be strengthened, not weakened.",
-      "Public services require sustainable funding after years of cuts and underinvestment.",
-      "A green industrial revolution will create jobs and tackle climate change."
-    ],
-    "default": [
-      "I rise to speak on behalf of my constituents who have expressed concerns about this matter.",
-      "The legislation before us today requires careful scrutiny and amendment.",
-      "Investment in our public services must be a priority for any responsible government.",
-      "The people of my constituency have made their views very clear on this issue.",
-      "We must work across party lines to find solutions to the challenges we face."
-    ]
-  };
+  const defaultSpeeches = [
+    "I rise to speak on behalf of my constituents who have expressed concerns about this matter.",
+    "The legislation before us today requires careful scrutiny and amendment.",
+    "Investment in our public services must be a priority for any responsible government.",
+    "The people of my constituency have made their views very clear on this issue.",
+    "We must work across party lines to find solutions to the challenges we face."
+  ];
   
-  // Get speeches for the specific MP or use default
-  const mpSpeeches = speeches[mpId] || speeches.default;
-  
-  // Create mock response
   return {
-    items: mpSpeeches.map((text, index) => ({
+    items: defaultSpeeches.map((text, index) => ({
       _about: `speech_${mpId}_${index}`,
       absoluteEventDate: new Date().toISOString(),
       text: text,
       speakerName: "Member of Parliament"
     })),
-    totalResults: mpSpeeches.length,
+    totalResults: defaultSpeeches.length,
     startIndex: 0,
-    pageSize: mpSpeeches.length
+    pageSize: defaultSpeeches.length
   };
 };
 

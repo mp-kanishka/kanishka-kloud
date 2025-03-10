@@ -1,4 +1,5 @@
 import { WordCloudItem } from "@/types";
+import { getPartyGradient, DEFAULT_COLORS } from "@/utils/partyColors";
 
 // Common English stopwords to filter out
 const STOPWORDS = new Set([
@@ -29,30 +30,6 @@ const PARLIAMENT_STOPWORDS = new Set([
 
 // Combine all stopwords
 const ALL_STOPWORDS = new Set([...STOPWORDS, ...PARLIAMENT_STOPWORDS]);
-
-// Party color mappings
-const PARTY_COLORS: Record<string, string[]> = {
-  "labour": ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"],
-  "labour (co-op)": ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"],
-  "conservative": ["#0087dc", "#4DA6FF", "#80BFFF", "#B3D9FF", "#CCE6FF"],
-  "reform uk": ["#00bed6", "#4DD9ED", "#80E5F3", "#B3F0F9", "#CCF6FB"],
-  "reform": ["#00bed6", "#4DD9ED", "#80E5F3", "#B3F0F9", "#CCF6FB"],
-  "liberal democrat": ["#FAA61A", "#FFC04D", "#FFD280", "#FFE0B3", "#FFEACC"],
-  "liberal democrats": ["#FAA61A", "#FFC04D", "#FFD280", "#FFE0B3", "#FFEACC"],
-  "green": ["#4BA562", "#7BC08C", "#A3D5B6", "#CBEADF", "#E2F4E9"],
-  "green party": ["#4BA562", "#7BC08C", "#A3D5B6", "#CBEADF", "#E2F4E9"],
-  "democratic unionist party": ["#B84148", "#D17A80", "#E0A3A8", "#EFCCCF", "#F7E6E7"],
-  "dup": ["#B84148", "#D17A80", "#E0A3A8", "#EFCCCF", "#F7E6E7"],
-  "independent": ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"],
-  "independents": ["#E4003B", "#FF6B6B", "#FF8585", "#FFA0A0", "#FFBABA"]
-};
-
-// Default color palette for unknown parties
-const DEFAULT_COLORS = [
-  '#ea384c', '#0EA5E9', '#F97316', '#8B5CF6', '#22c55e',
-  '#D946EF', '#fb923c', '#1EAEDB', '#9b87f5', '#7E69AB',
-  '#FEC6A1', '#E5DEFF', '#D3E4FD', '#FDE1D3', '#6E59A5'
-];
 
 /**
  * Process speeches into word frequency map
@@ -87,7 +64,7 @@ export const getWordCloudItems = (
   party?: string
 ): WordCloudItem[] => {
   // Get party colors or use default colors
-  const colors = party ? PARTY_COLORS[party.toLowerCase()] || DEFAULT_COLORS : DEFAULT_COLORS;
+  const colors = getPartyGradient(party);
   
   if (wordCountsOrItems instanceof Map) {
     return [...wordCountsOrItems.entries()]
