@@ -26,9 +26,9 @@ const SearchBox = ({
 
   // Function to get party text color
   const getPartyTextColor = (party?: string) => {
-    if (!party) return "text-primary";
+    if (!party) return { color: "var(--primary)" };
     const color = getPartyColor(party);
-    return `text-[${color}]`;
+    return { color };
   };
 
   const handleSearch = useCallback(async (searchQuery: string) => {
@@ -165,7 +165,7 @@ const SearchBox = ({
                   <div>
                     <p className="font-medium">{mp.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {mp.party && <span className={getPartyTextColor(mp.party)}>{mp.party}</span>}
+                      {mp.party && <span style={getPartyTextColor(mp.party)}>{mp.party}</span>}
                       {mp.constituency && mp.party && " · "}
                       {mp.constituency}
                     </p>

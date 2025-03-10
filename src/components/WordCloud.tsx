@@ -242,9 +242,9 @@ const WordCloud = ({ words, loading }: WordCloudProps) => {
         className={`absolute inset-0 transition-transform duration-100 md:w-full md:h-full md:left-0 md:top-0 ${
           isMobile 
             ? isLandscape 
-              ? 'w-[600px] h-[200%] -top-[50%]' 
-              : 'w-[150vw] h-[150%] -top-[15%] -left-[25vw]'
-            : 'w-[150%] h-[150%] -left-[25%] -top-[45%]'
+              ? 'w-[100vw] h-[100vh]' 
+              : 'w-[100vw] h-[100vh]'
+            : 'w-[150%] h-[150%] -left-[25%] -top-[25%]'
         }`}
         style={{
           transform: `translate(${transform.x}px, ${transform.y}px) scale(${isMobile ? 1 : transform.scale})`,

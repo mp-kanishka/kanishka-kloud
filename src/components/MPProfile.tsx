@@ -8,9 +8,12 @@ interface MPProfileProps {
 const MPProfile = ({ mp }: MPProfileProps) => {
   // Function to get party badge color
   const getPartyBadgeColor = (party?: string) => {
-    if (!party) return "bg-primary/10 text-primary";
+    if (!party) return { backgroundColor: "var(--primary)", color: "var(--primary)" };
     const color = getPartyColor(party);
-    return `bg-[${color}]/10 text-[${color}]`;
+    return {
+      backgroundColor: `${color}1A`, // 1A is 10% opacity in hex
+      color: color
+    };
   };
 
   return (
@@ -39,7 +42,10 @@ const MPProfile = ({ mp }: MPProfileProps) => {
           <h2 className="text-2xl font-heading font-medium">{mp.name}</h2>
           <div className="mt-1 flex items-center gap-3">
             {mp.party && (
-              <span className={`text-sm px-2 py-1 rounded-full ${getPartyBadgeColor(mp.party)} font-medium inline-block`}>
+              <span 
+                className="text-sm px-2 py-1 rounded-full font-medium inline-block"
+                style={getPartyBadgeColor(mp.party)}
+              >
                 {mp.party}
               </span>
             )}
