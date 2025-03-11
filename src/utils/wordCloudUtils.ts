@@ -91,7 +91,7 @@ export const getWordCloudItems = (
 export const checkOverlap = (
   x1: number, y1: number, width1: number, height1: number,
   x2: number, y2: number, width2: number, height2: number,
-  buffer: number = 1
+  buffer: number = 8
 ): boolean => {
   return !(
     x1 + width1 + buffer < x2 ||
@@ -105,8 +105,8 @@ export const checkOverlap = (
  * Calculate font size based on word frequency
  */
 export const calculateFontSize = (value: number, minValue: number, maxValue: number): number => {
-  const minSize = 12;
-  const maxSize = 100;
+  const minSize = 20;
+  const maxSize = 150;
   
   if (minValue === maxValue) return (minSize + maxSize) / 2;
   
@@ -115,7 +115,7 @@ export const calculateFontSize = (value: number, minValue: number, maxValue: num
   const logValue = Math.log(value || 1);
   
   const normalizedValue = (logValue - logMin) / (logMax - logMin);
-  const exponentialValue = Math.pow(normalizedValue, 1.5);
+  const exponentialValue = Math.pow(normalizedValue, 3.5);
   
   return Math.max(minSize, Math.min(maxSize, Math.round(minSize + exponentialValue * (maxSize - minSize))));
 };

@@ -11,6 +11,7 @@ interface WordCloudProps {
 
 export interface WordCloudRef {
   saveImage: () => Promise<void>;
+  getImageBlob: () => Promise<Blob | null>;
 }
 
 const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, ref) => {
@@ -219,10 +220,40 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
     if (!containerRef.current) return;
 
     try {
+      const blob = await generateWordCloudImage();
+      if (!blob) return;
+
+      // Get MP name for the filename
+      const mpName = document.querySelector('.mp-profile h2')?.textContent || 'unknown-mp';
+      const sanitizedMpName = mpName
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+        .replace(/[^A-Za-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      // Download the image
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Cloud-${sanitizedMpName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error saving image:', error);
+    }
+  };
+
+  const generateWordCloudImage = async (): Promise<Blob | null> => {
+    if (!containerRef.current) return null;
+
+    try {
       // Create a temporary canvas with MacBook Pro 13-inch M2 resolution
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) return null;
 
       // Set dimensions to match MacBook Pro 13-inch M2 resolution
       const width = 2560;  // MacBook Pro 13-inch M2 width
@@ -273,7 +304,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
         // Helper function to check if a rectangle overlaps with existing ones
         const checkOverlap = (rect: { x: number; y: number; width: number; height: number }) => {
           return placedRects.some(placed => {
-            const padding = Math.min(6, rect.width * 0.08);
+            const padding = Math.min(12, rect.width * 0.12);
             return !(
               rect.x + rect.width + padding < placed.x ||
               rect.x > placed.x + placed.width + padding ||
@@ -390,7 +421,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       // Convert word cloud to image with higher scale for better quality
       const data = await html2canvas(tempContainer, {
         backgroundColor: '#ffffff',
-        scale: 2, // Keep scale at 2 for high quality
+        scale: 2,
         logging: false,
         allowTaint: true,
         useCORS: true,
@@ -410,36 +441,30 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
 
       // Add MP details at the bottom
       const mpName = document.querySelector('.mp-profile h2')?.textContent || 'unknown-mp';
-      const sanitizedMpName = mpName
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ')
-        .replace(/[^A-Za-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 
       // Add a subtle separator line
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.lineWidth = 2; // Slightly thicker line for higher resolution
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(60, height - 120); // Adjusted for new resolution
+      ctx.moveTo(60, height - 120);
       ctx.lineTo(width - 60, height - 120);
       ctx.stroke();
 
-      // Add MP details with party color - adjusted font sizes
-      ctx.font = 'bold 48px "League Spartan"'; // Increased font size
+      // Add MP details with party color
+      ctx.font = 'bold 48px "League Spartan"';
       ctx.fillStyle = '#000';
       ctx.fillText(mpName, 60, height - 70);
 
-      // Add party and constituency - adjusted font sizes
+      // Add party and constituency
       ctx.font = '32px "League Spartan"';
       
       // Draw party badge
       const mpParty = document.querySelector('.mp-profile .rounded-full')?.textContent;
       if (mpParty) {
-        const partyWidth = ctx.measureText(mpParty).width + 32; // Adjusted padding
+        const partyWidth = ctx.measureText(mpParty).width + 32;
         ctx.fillStyle = mpParty ? '#000' : '#666';
         ctx.beginPath();
-        ctx.roundRect(60, height - 50, partyWidth, 48, 24); // Adjusted size
+        ctx.roundRect(60, height - 50, partyWidth, 48, 24);
         ctx.fill();
         
         ctx.fillStyle = '#fff';
@@ -453,36 +478,33 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
         ctx.fillText(mpConstituency, mpParty ? 60 + ctx.measureText(mpParty).width + 80 : 60, height - 20);
       }
 
-      // Add watermark with adjusted size
+      // Add watermark
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.font = 'bold 80px "League Spartan"'; // Increased font size
-      const watermarkText = 'Westminster Word Cloud';
-      const watermarkWidth = ctx.measureText(watermarkText).width;
-      ctx.fillText(watermarkText, width - watermarkWidth - 60, 100); // Adjusted position
+      ctx.font = 'bold 60px "League Spartan"';
+      const watermarkLine1 = 'Kanishka';
+      const watermarkLine2 = 'Kloud';
+      const watermarkWidth1 = ctx.measureText(watermarkLine1).width;
+      const watermarkWidth2 = ctx.measureText(watermarkLine2).width;
+      const padding = 40;
+      ctx.fillText(watermarkLine1, width - watermarkWidth1 - padding, padding + 30);
+      ctx.fillText(watermarkLine2, width - watermarkWidth2 - padding, padding + 100);
 
-      // Convert to blob and download
-      const blob = await new Promise<Blob>((resolve) => {
+      // Convert to blob and return
+      return new Promise<Blob>((resolve) => {
         canvas.toBlob((blob) => {
           if (blob) resolve(blob);
-        }, 'image/png', 1.0); // Maximum quality
+        }, 'image/png', 1.0);
       });
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Cloud-${sanitizedMpName}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
     } catch (error) {
-      console.error('Error saving image:', error);
+      console.error('Error generating image:', error);
+      return null;
     }
   };
 
   useImperativeHandle(ref, () => ({
-    saveImage: handleSaveImage
+    saveImage: handleSaveImage,
+    getImageBlob: generateWordCloudImage
   }));
 
   if (loading) {

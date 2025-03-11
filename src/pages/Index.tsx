@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Info, Download } from "lucide-react";
+import { Info, Download, Share2 } from "lucide-react";
 import SearchBox from "@/components/SearchBox";
 import MPProfile from "@/components/MPProfile";
 import WordCloud, { WordCloudRef } from "@/components/WordCloud";
@@ -51,17 +51,56 @@ const Index = () => {
     }
   };
 
+  const handleShareToTwitter = async () => {
+    if (wordCloudRef.current) {
+      try {
+        const imageBlob = await wordCloudRef.current.getImageBlob();
+        if (!imageBlob) return;
+
+        // Create tweet text
+        const tweetText = selectedMP 
+          ? `Check out ${selectedMP.name}'s most frequently used words in Parliament! #UKPolitics`
+          : "Check out this MP's word cloud from Parliament! #UKPolitics";
+
+        try {
+          // Convert blob to ClipboardItem
+          const clipboardItem = new ClipboardItem({
+            'image/png': imageBlob
+          });
+          
+          // Copy image to clipboard
+          await navigator.clipboard.write([clipboardItem]);
+          
+          // Show success message
+          alert('Image copied to clipboard! You can now paste it into your tweet.');
+          
+          // Open Twitter's web intent URL with the tweet text
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+          window.open(twitterUrl, '_blank', 'width=550,height=420');
+        } catch (clipboardError) {
+          console.error('Error copying to clipboard:', clipboardError);
+          // Fallback: just open Twitter with text if clipboard fails
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+          window.open(twitterUrl, '_blank', 'width=550,height=420');
+        }
+      } catch (error) {
+        console.error('Error sharing to Twitter:', error);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center py-4 md:py-8">
-      {!selectedMP && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center max-md:landscape:justify-start max-md:landscape:pt-4 z-10">
-          <div className="w-full max-w-4xl mx-auto px-4">
-            <header className="text-center mb-8 max-md:landscape:mb-4">
-              <h1 className="text-4xl md:text-5xl max-md:landscape:text-3xl font-heading font-medium">Westminster Word Cloud</h1>
-            </header>
-          </div>
+      <div className="fixed top-4 right-4 z-20">
+        <h1 className="text-4xl md:text-5xl max-md:landscape:text-3xl font-heading font-medium leading-tight text-right">
+          <div>Kanishka</div>
+          <div>Kloud</div>
+        </h1>
+      </div>
 
-          <div className="w-full max-w-2xl mx-auto px-4">
+      {!selectedMP && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center max-md:landscape:justify-start max-md:landscape:pt-4 z-10" style={{ pointerEvents: 'none' }}>
+          <div className="w-full max-w-2xl mx-auto px-4" style={{ pointerEvents: 'auto' }}>
             <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={false} />
           </div>
         </div>
@@ -69,13 +108,7 @@ const Index = () => {
 
       {selectedMP && (
         <>
-          <div className="w-full max-w-4xl mx-auto px-4">
-            <header className="text-center mb-2 md:mb-4">
-              <h1 className="text-4xl md:text-5xl font-heading font-medium">Westminster Word Cloud</h1>
-            </header>
-          </div>
-
-          <div className="w-full max-w-2xl mx-auto px-4 mb-8">
+          <div className="w-full max-w-2xl mx-auto px-4 mb-8 mt-16">
             <div className="animate-slide-up">
               <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={true} />
             </div>
@@ -101,20 +134,29 @@ const Index = () => {
 
       <Link
         to="/about"
-        className="fixed left-4 bottom-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+        className="fixed left-4 bottom-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-30"
         aria-label="About this site"
       >
         <Info className="w-5 h-5 text-gray-600" />
       </Link>
 
       {wordCloudData.length > 0 && (
-        <button
-          onClick={handleSaveImage}
-          className="fixed bottom-6 right-6 z-50 p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-300"
-          aria-label="Download word cloud"
-        >
-          <Download className="w-5 h-5" />
-        </button>
+        <div className="fixed bottom-6 right-6 z-50 flex gap-2">
+          <button
+            onClick={handleShareToTwitter}
+            className="p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-300"
+            aria-label="Share on Twitter"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleSaveImage}
+            className="p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-300"
+            aria-label="Download word cloud"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+        </div>
       )}
     </div>
   );
