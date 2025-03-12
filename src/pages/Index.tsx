@@ -100,7 +100,7 @@ const Index = () => {
 
       {!selectedMP && (
         <div className="fixed inset-0 flex flex-col items-center justify-center max-md:landscape:justify-start max-md:landscape:pt-4 z-10" style={{ pointerEvents: 'none' }}>
-          <div className="w-full max-w-2xl mx-auto px-4 mt-32 md:mt-0" style={{ pointerEvents: 'auto' }}>
+          <div className="w-full max-w-2xl mx-auto px-4 mt-44 md:mt-0" style={{ pointerEvents: 'auto' }}>
             <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={false} />
           </div>
         </div>
@@ -108,7 +108,7 @@ const Index = () => {
 
       {selectedMP && (
         <>
-          <div className="w-full max-w-2xl mx-auto px-4 mb-2 md:mb-4 mt-36 md:mt-24">
+          <div className="w-full max-w-2xl mx-auto px-4 mb-2 md:mb-4 mt-44 md:mt-24">
             <div className="animate-slide-up">
               <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={true} />
             </div>
