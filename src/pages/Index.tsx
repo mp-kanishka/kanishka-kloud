@@ -108,14 +108,14 @@ const Index = () => {
 
       {selectedMP && (
         <>
-          <div className="w-full max-w-2xl mx-auto px-4 mb-8 mt-24 md:mt-16">
+          <div className="w-full max-w-2xl mx-auto px-4 mb-4 mt-24 md:mt-16">
             <div className="animate-slide-up">
               <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={true} />
             </div>
           </div>
 
           <div className="w-full animate-fade-in">
-            <div className="px-4 -mb-4">
+            <div className="px-4 -mb-2">
               <MPProfile mp={selectedMP} />
             </div>
             
