@@ -59,8 +59,8 @@ const Index = () => {
 
         // Create tweet text
         const tweetText = selectedMP 
-          ? `Check out ${selectedMP.name}'s most frequently used words in Parliament! #UKPolitics`
-          : "Check out this MP's word cloud from Parliament! #UKPolitics";
+          ? `Check out ${selectedMP.twitter_handle ? `@${selectedMP.twitter_handle}` : selectedMP.name}'s most frequently used words in Parliament! #KanishkaKloud`
+          : "Check out this MP's word cloud from Parliament! #KanishkaKloud";
 
         try {
           // Convert blob to ClipboardItem
@@ -108,7 +108,7 @@ const Index = () => {
 
       {selectedMP && (
         <>
-          <div className="w-full max-w-2xl mx-auto px-4 mb-8 mt-16">
+          <div className="w-full max-w-2xl mx-auto px-4 mb-8 mt-24 md:mt-16">
             <div className="animate-slide-up">
               <SearchBox onSelectMP={handleSelectMP} isLoading={loading} isCollapsed={true} />
             </div>

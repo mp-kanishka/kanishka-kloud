@@ -5,6 +5,7 @@ export interface MP {
   party?: string;
   constituency?: string;
   imageUrl?: string;
+  twitter_handle?: string;
 }
 
 export interface HansardResponse {
