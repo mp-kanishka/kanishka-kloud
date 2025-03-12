@@ -8,6 +8,7 @@ interface RawMPData {
   party_affiliation: string;
   constituency: string;
   portrait_URL: string;
+  twitter_handle: string | null;
 }
 
 // Convert raw MP data to our MP type
@@ -18,7 +19,8 @@ export const convertRawMPToMP = (rawMP: RawMPData): MP => {
     name: rawMP.name,
     party: rawMP.party_affiliation,
     constituency: rawMP.constituency,
-    imageUrl: rawMP.portrait_URL
+    imageUrl: rawMP.portrait_URL,
+    twitter_handle: rawMP.twitter_handle
   };
 };
 
