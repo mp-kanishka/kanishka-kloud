@@ -352,7 +352,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
 
           let placed = false;
           let attempts = 0;
-          const maxAttempts = 200;
+          const maxAttempts = 300; // Increased from 200
           let finalX = 0;
           let finalY = 0;
           let spiralAngle = Math.random() * Math.PI * 2;
@@ -371,6 +371,11 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
               width: wordWidth,
               height: wordHeight
             };
+
+            // Adjust padding based on word size
+            const basePadding = 35;
+            const sizeFactor = Math.min(1, wordWidth / 200); // Normalize word size
+            const adjustedPadding = basePadding * (1 - sizeFactor * 0.3); // Reduce padding for larger words
 
             if (isWithinOvalBoundary(x, y, wordWidth, wordHeight) && 
                 isAwayFromEdges(rect) && 
