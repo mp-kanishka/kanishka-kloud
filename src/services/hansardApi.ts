@@ -78,7 +78,37 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
     };
   } catch (error) {
     console.error('Error in getMPSpeeches:', error);
-    return getMockSpeeches(mpId);
+    const mp = getMPById(mpId);
+    if (!mp) {
+      throw new Error("Could not find MP");
+    }
+    
+    // Check if it's a timeout error
+    if (error instanceof Error && error.message.includes('timeout')) {
+      return {
+        items: [{
+          _about: `speech_${mpId}_timeout`,
+          absoluteEventDate: new Date().toISOString(),
+          text: "Sorry, we're having trouble loading this MP's data. Please try again.",
+          speakerName: mp.name
+        }],
+        totalResults: 1,
+        startIndex: 0,
+        pageSize: 1
+      };
+    }
+    // For other errors, return the no-data message
+    return {
+      items: [{
+        _about: `speech_${mpId}_no_data`,
+        absoluteEventDate: new Date().toISOString(),
+        text: "This MP hasn't spoken in the Commons since the 17th July 2024",
+        speakerName: mp.name
+      }],
+      totalResults: 1,
+      startIndex: 0,
+      pageSize: 1
+    };
   }
 };
 
