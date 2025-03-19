@@ -112,7 +112,12 @@ const SearchBox = ({
 
   const getMPImageUrl = (mp: MP) => {
     if (!mp.imageUrl) return null;
-    return getMPImage(mp.name);
+    const imageUrl = getMPImage(mp.name);
+    if (!imageUrl) {
+      console.warn(`No image found for MP: ${mp.name}`);
+      return null;
+    }
+    return imageUrl;
   };
 
   return <div className="mp-search-container" ref={containerRef}>
@@ -166,7 +171,17 @@ const SearchBox = ({
                         onError={e => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = "none";
-                          target.parentElement?.classList.add("fallback-avatar");
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.classList.add("fallback-avatar");
+                            // Add initials as fallback
+                            const initials = mp.name
+                              .split(' ')
+                              .map(n => n[0])
+                              .join('')
+                              .toUpperCase();
+                            parent.textContent = initials;
+                          }
                         }} 
                       />
                     </div>
