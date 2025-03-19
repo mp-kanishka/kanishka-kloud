@@ -1,5 +1,7 @@
 import { HansardResponse, MP, SpeakerStats } from "@/types";
 import { searchLocalMP, getMPById, getMPByName } from "@/utils/mpDataUtils";
+// @ts-ignore
+import speakerStats from '/cleaned_speaker_statistics.json';
 
 // Base URLs for different API endpoints - kept for potential future use
 const BACKUP_URL = "https://members-api.parliament.uk/api/";
@@ -25,27 +27,15 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
     if (!mp || !mp.person_id) {
       throw new Error("Could not find MP person_id");
     }
-    
-    const speakerStats: SpeakerStats = await fetch('/cleaned_speaker_statistics.json')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to load speaker statistics');
-        }
-        return response.json();
-      })
-      .catch((error) => {
-        console.error('Error loading speaker statistics:', error);
-        return {};
-      });
 
     // Find speaker data by matching person_id
-    const speakerData = Object.entries(speakerStats).find(([_, stats]) => 
+    const speakerData = Object.entries(speakerStats as SpeakerStats).find(([_, stats]) => 
       (stats as any).person_id === mp.person_id
     );
     
     if (speakerData) {
       const [_, data] = speakerData;
-      const wordCounts = data.word_counts || {};
+      const wordCounts = (data as any).word_counts || {};
       
       const items = Object.entries(wordCounts)
         .filter(([word]) => word.length > 1)
@@ -83,21 +73,7 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
       throw new Error("Could not find MP");
     }
     
-    // Check if it's a timeout error
-    if (error instanceof Error && error.message.includes('timeout')) {
-      return {
-        items: [{
-          _about: `speech_${mpId}_timeout`,
-          absoluteEventDate: new Date().toISOString(),
-          text: "Sorry, we're having trouble loading this MP's data. Please try again.",
-          speakerName: mp.name
-        }],
-        totalResults: 1,
-        startIndex: 0,
-        pageSize: 1
-      };
-    }
-    // For other errors, return the no-data message
+    // For any errors, return the no-data message
     return {
       items: [{
         _about: `speech_${mpId}_no_data`,
