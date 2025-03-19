@@ -6,7 +6,7 @@ const BACKUP_URL = "https://members-api.parliament.uk/api/";
 const BASE_URL = "https://api.parliament.uk/search/"; 
 
 // Current parliament session start date
-const CURRENT_PARLIAMENT_START = new Date("2025-07-17");
+const CURRENT_PARLIAMENT_START = new Date("2024-07-17");
 
 /**
  * Search for MPs by name, constituency, or party
@@ -69,7 +69,7 @@ export const getMPSpeeches = async (mpId: string, limit: number = 100): Promise<
       items: [{
         _about: `speech_${mpId}_no_data`,
         absoluteEventDate: new Date().toISOString(),
-        text: "This MP hasn't spoken in the Commons since the 17th July 2025",
+        text: "This MP hasn't spoken in the Commons since the 17th July 2024",
         speakerName: mp.name
       }],
       totalResults: 1,
