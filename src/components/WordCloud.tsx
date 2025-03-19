@@ -410,7 +410,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
         wordElement.style.top = `${y}px`;
         wordElement.style.fontSize = `${fontSize}px`;
         wordElement.style.fontFamily = '"League Spartan", sans-serif';
-        wordElement.style.color = word.color || '#000';
+        wordElement.style.color = word.color || '#202020';
         wordElement.style.fontWeight = significance > 0.5 ? 'bold' : '500';
         wordElement.style.opacity = '1';
         wordElement.style.transform = 'translate(-50%, -50%)';
@@ -448,7 +448,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       const mpName = document.querySelector('.mp-profile h2')?.textContent || 'unknown-mp';
 
       // Add a subtle separator line
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.strokeStyle = 'rgba(32, 32, 32, 0.1)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(60, height - 120);
@@ -457,7 +457,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
 
       // Add MP details with party color
       ctx.font = 'bold 48px "League Spartan"';
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = '#202020';
       ctx.fillText(mpName, 60, height - 70);
 
       // Add party and constituency
@@ -467,7 +467,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       const mpParty = document.querySelector('.mp-profile .rounded-full')?.textContent;
       if (mpParty) {
         const partyWidth = ctx.measureText(mpParty).width + 32;
-        ctx.fillStyle = mpParty ? '#000' : '#666';
+        ctx.fillStyle = mpParty ? '#202020' : '#666';
         ctx.beginPath();
         ctx.roundRect(60, height - 50, partyWidth, 48, 24);
         ctx.fill();
@@ -484,7 +484,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       }
 
       // Add watermark
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillStyle = '#202020';
       ctx.font = 'bold 60px "League Spartan"';
       const watermarkLine1 = 'Kanishka';
       const watermarkLine2 = 'Kloud';
@@ -568,10 +568,10 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
                   left: `${word.x}px`,
                   top: `${word.y}px`,
                   fontSize: `${word.fontSize}px`,
-                  color: word.color || '#000',
+                  color: word.color || '#202020',
                   opacity: 0,
                   fontWeight: significance > 0.5 ? 'bold' : 'normal',
-                  textShadow: significance > 0.7 ? '0 0 1px rgba(0,0,0,0.2)' : 'none',
+                  textShadow: significance > 0.7 ? '0 0 1px rgba(32,32,32,0.2)' : 'none',
                   animation: `fade-in 0.5s ease-out ${index * 0.02}s forwards`,
                 }}
               >
