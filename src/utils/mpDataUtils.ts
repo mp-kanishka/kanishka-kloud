@@ -16,17 +16,14 @@ interface RawMPData {
 export const convertRawMPToMP = (rawMP: RawMPData): MP => {
   // Find the MP's photo data
   const mpPhoto = mpPhotoData.find(photo => photo.name === rawMP.name);
-  const imageUrl = mpPhoto?.portrait_link 
-    ? `/src/data/MP_Images/${mpPhoto.portrait_link}`
-    : null;
-
+  
   return {
     id: rawMP.person_id,
     person_id: rawMP.person_id,
     name: rawMP.name,
     party: rawMP.party_affiliation,
     constituency: rawMP.constituency,
-    imageUrl: imageUrl,
+    imageUrl: mpPhoto?.portrait_link || null,
     twitter_handle: rawMP.twitter_handle
   };
 };
