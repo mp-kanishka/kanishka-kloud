@@ -24,4 +24,17 @@ export default defineConfig(({ mode }) => ({
   },
   publicDir: 'public',
   assetsInclude: ['**/*.webp'],
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.webp')) {
+            return 'assets/images/[name][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
+  },
 }));

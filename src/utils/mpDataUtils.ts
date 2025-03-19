@@ -17,7 +17,7 @@ export const convertRawMPToMP = (rawMP: RawMPData): MP => {
   // Find the MP's photo data
   const mpPhoto = mpPhotoData.find(photo => photo.name === rawMP.name);
   const imageUrl = mpPhoto?.portrait_link 
-    ? new URL(`../data/MP_Images/${mpPhoto.portrait_link}`, import.meta.url).href
+    ? `/src/data/MP_Images/${mpPhoto.portrait_link}`
     : null;
 
   return {

@@ -1,6 +1,7 @@
 import { MP } from "@/types";
 import { getPartyColor } from "@/utils/partyColors";
 import mpPhotoData from "@/data/mp_photo_data.json";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface MPProfileProps {
   mp: MP;
@@ -20,7 +21,7 @@ const MPProfile = ({ mp }: MPProfileProps) => {
   // Find the MP's photo data
   const mpPhoto = mpPhotoData.find(photo => photo.name === mp.name);
   const imageUrl = mpPhoto?.portrait_link 
-    ? new URL(`../data/MP_Images/${mpPhoto.portrait_link}`, import.meta.url).href
+    ? getImageUrl(mpPhoto.portrait_link)
     : null;
 
   return (

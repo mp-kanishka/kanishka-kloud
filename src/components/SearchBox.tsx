@@ -111,11 +111,7 @@ const SearchBox = ({
 
   const getMPImageUrl = (mp: MP) => {
     if (!mp.imageUrl) return null;
-    try {
-      return new URL(mp.imageUrl, import.meta.url).href;
-    } catch {
-      return mp.imageUrl;
-    }
+    return mp.imageUrl;
   };
 
   return <div className="mp-search-container" ref={containerRef}>
