@@ -1,7 +1,7 @@
 import { HansardResponse, MP, SpeakerStats } from "@/types";
 import { searchLocalMP, getMPById, getMPByName } from "@/utils/mpDataUtils";
 // @ts-ignore
-import speakerStats from '/cleaned_speaker_statistics.json';
+import speakerStats from '@/data/cleaned_speaker_statistics.json';
 
 // Base URLs for different API endpoints - kept for potential future use
 const BACKUP_URL = "https://members-api.parliament.uk/api/";
