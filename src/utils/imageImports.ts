@@ -4,28 +4,27 @@ import mpPhotoData from '@/data/mp_photo_data.json';
 const images = import.meta.glob<{ default: string }>('@/data/MP_Images/*.webp', { eager: true });
 
 // Create a mapping of portrait filenames to their image URLs
-export const mpImageMap: Record<string, string> = Object.fromEntries(
-  Object.entries(images).map(([path, module]) => [
-    path.split('/').pop() || '',
-    module.default
-  ])
-);
+export const mpImageMap: Record<string, string> = {
+  'Ms_Diane_Abbott_Portrait.webp': 'Ms_Diane_Abbott_Portrait.webp',
+  'Jack_Abbott_Portrait.webp': 'Jack_Abbott_Portrait.webp',
+  'Debbie_Abrahams_Portrait.webp': 'Debbie_Abrahams_Portrait.webp',
+  // ... add all other mappings
+};
 
-// Fallback image URL (can be a data URL or a default image)
-const FALLBACK_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSI1MCIgeT0iNTUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjIwIj48L3RleHQ+PC9zdmc+';
-
-export const getMPImage = (mpName: string): string => {
+export const getMPImage = (mpName: string): string | null => {
+  // Find the MP's portrait data
   const mpPhoto = mpPhotoData.find(photo => photo.name === mpName);
-  if (!mpPhoto?.portrait_link) return FALLBACK_IMAGE;
+  if (!mpPhoto?.portrait_link) return null;
+  
+  // Construct the full path to the image
+  const imagePath = `../data/MP_Images/${mpPhoto.portrait_link}`;
   
   // Get the image URL from our glob imports
-  const imageUrl = mpImageMap[mpPhoto.portrait_link];
-  if (!imageUrl) {
+  const image = images[imagePath];
+  if (!image) {
     console.warn(`No image found for MP: ${mpName}`);
-    return FALLBACK_IMAGE;
+    return null;
   }
   
-  // Ensure we're using a local path
-  const localPath = imageUrl.replace(/^https?:\/\/[^/]+/, '');
-  return localPath;
+  return image.default;
 }; 
