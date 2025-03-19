@@ -3,6 +3,7 @@ import { Search, RotateCw } from "lucide-react";
 import { MP } from "@/types";
 import { searchMP } from "@/services/hansardApi";
 import { getPartyColor } from "@/utils/partyColors";
+import mpPhotoData from '@/data/mp_photo_data.json';
 
 interface SearchBoxProps {
   onSelectMP: (mp: MP) => void;
@@ -108,6 +109,15 @@ const SearchBox = ({
     }
   };
 
+  const getMPImageUrl = (mp: MP) => {
+    if (!mp.imageUrl) return null;
+    try {
+      return new URL(mp.imageUrl, import.meta.url).href;
+    } catch {
+      return mp.imageUrl;
+    }
+  };
+
   return <div className="mp-search-container" ref={containerRef}>
       <div className="relative">
         <input 
@@ -153,7 +163,7 @@ const SearchBox = ({
                   {mp.imageUrl && (
                     <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 dark:bg-gray-700">
                       <img 
-                        src={mp.imageUrl} 
+                        src={getMPImageUrl(mp)} 
                         alt={mp.name} 
                         className="h-full w-full object-cover"
                         onError={e => {

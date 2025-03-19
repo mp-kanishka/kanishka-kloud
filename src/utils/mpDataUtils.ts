@@ -1,4 +1,5 @@
 import mpData from '@/data/mps_data_20250307_093055.json';
+import mpPhotoData from '@/data/mp_photo_data.json';
 import { MP } from '@/types';
 
 // Type for the raw MP data from the JSON file
@@ -13,13 +14,19 @@ interface RawMPData {
 
 // Convert raw MP data to our MP type
 export const convertRawMPToMP = (rawMP: RawMPData): MP => {
+  // Find the MP's photo data
+  const mpPhoto = mpPhotoData.find(photo => photo.name === rawMP.name);
+  const imageUrl = mpPhoto?.portrait_link 
+    ? new URL(`../data/MP_Images/${mpPhoto.portrait_link}`, import.meta.url).href
+    : null;
+
   return {
     id: rawMP.person_id,
     person_id: rawMP.person_id,
     name: rawMP.name,
     party: rawMP.party_affiliation,
     constituency: rawMP.constituency,
-    imageUrl: rawMP.portrait_URL,
+    imageUrl: imageUrl,
     twitter_handle: rawMP.twitter_handle
   };
 };
