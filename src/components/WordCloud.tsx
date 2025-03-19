@@ -484,7 +484,9 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       }
 
       // Add watermark
+      ctx.save(); // Save the current context state
       ctx.fillStyle = '#202020';
+      ctx.globalAlpha = 1.0; // Ensure 100% opacity
       ctx.font = 'bold 60px "League Spartan"';
       const watermarkLine1 = 'Kanishka';
       const watermarkLine2 = 'Kloud';
@@ -493,6 +495,7 @@ const WordCloud = forwardRef<WordCloudRef, WordCloudProps>(({ words, loading }, 
       const padding = 40;
       ctx.fillText(watermarkLine1, width - watermarkWidth1 - padding, padding + 30);
       ctx.fillText(watermarkLine2, width - watermarkWidth2 - padding, padding + 100);
+      ctx.restore(); // Restore the context state
 
       // Convert to blob and return
       return new Promise<Blob>((resolve) => {
