@@ -107,6 +107,14 @@ export const PARTY_COLORS: Record<string, PartyColor> = {
   "speaker": {
     base: "#1F1F1F",
     gradient: ["#1F1F1F", "#2F2F2F", "#3F3F3F", "#4F4F4F"]
+  },
+  "sinn fein": {
+    base: "#3A7E6A",
+    gradient: ["#3A7E6A", "#2D6352", "#4A8F7A", "#5A9F8A"]
+  },
+  "sinn féin": {
+    base: "#3A7E6A",
+    gradient: ["#3A7E6A", "#2D6352", "#4A8F7A", "#5A9F8A"]
   }
 };
 
