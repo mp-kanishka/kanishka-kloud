@@ -16,9 +16,7 @@ interface RawMPData {
 export const convertRawMPToMP = (rawMP: RawMPData): MP => {
   // Find the MP's photo data
   const mpPhoto = mpPhotoData.find(photo => photo.name === rawMP.name);
-  const imageUrl = mpPhoto?.portrait_link 
-    ? `/src/data/MP_Images/${mpPhoto.portrait_link}`
-    : null;
+  const imageUrl = mpPhoto?.portrait_link || null;
 
   return {
     id: rawMP.person_id,

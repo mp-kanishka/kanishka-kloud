@@ -25,5 +25,6 @@ export const getMPImage = (mpName: string): string => {
     return FALLBACK_IMAGE;
   }
   
-  return imageUrl;
+  // Ensure we're using a local path
+  return imageUrl.replace(/^https?:\/\/[^/]+/, '');
 }; 
