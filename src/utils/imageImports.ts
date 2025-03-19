@@ -18,13 +18,6 @@ export const getMPImage = (mpName: string): string => {
   const mpPhoto = mpPhotoData.find(photo => photo.name === mpName);
   if (!mpPhoto?.portrait_link) return FALLBACK_IMAGE;
   
-  // Get the image URL from our glob imports
-  const imageUrl = mpImageMap[mpPhoto.portrait_link];
-  if (!imageUrl) {
-    console.warn(`No image found for MP: ${mpName}`);
-    return FALLBACK_IMAGE;
-  }
-  
-  // Ensure we're using a local path
-  return imageUrl.replace(/^https?:\/\/[^/]+/, '');
+  // Return the image URL from the public directory
+  return `/assets/images/${mpPhoto.portrait_link}`;
 }; 

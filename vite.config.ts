@@ -7,10 +7,11 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   base: '/', // Ensure assets are loaded from the root
   server: {
-    host: "::",
-    port: 8080,
+    host: true,
+    port: 3000,
     fs: {
-      strict: false,
+      strict: true,
+      allow: ['..']
     },
   },
   plugins: [
