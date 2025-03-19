@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: '/', // Ensure assets are loaded from the root
   server: {
     host: "::",
     port: 8080,
@@ -30,7 +31,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.webp')) {
-            return 'assets/images/[name][extname]';
+            return 'assets/images/[name]-[hash][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },

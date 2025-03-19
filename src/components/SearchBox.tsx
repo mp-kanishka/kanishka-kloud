@@ -112,12 +112,7 @@ const SearchBox = ({
 
   const getMPImageUrl = (mp: MP) => {
     if (!mp.imageUrl) return null;
-    const imageUrl = getMPImage(mp.name);
-    if (!imageUrl) {
-      console.warn(`No image found for MP: ${mp.name}`);
-      return null;
-    }
-    return imageUrl;
+    return getMPImage(mp.name);
   };
 
   return <div className="mp-search-container" ref={containerRef}>
@@ -168,9 +163,9 @@ const SearchBox = ({
                         src={getMPImageUrl(mp)} 
                         alt={mp.name} 
                         className="h-full w-full object-cover"
+                        loading="lazy"
                         onError={e => {
                           const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
                           const parent = target.parentElement;
                           if (parent) {
                             parent.classList.add("fallback-avatar");
