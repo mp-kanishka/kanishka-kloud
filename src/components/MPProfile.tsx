@@ -1,5 +1,6 @@
 import { MP } from "@/types";
 import { getPartyColor } from "@/utils/partyColors";
+import mpPhotoData from "@/data/mp_photo_data.json";
 
 interface MPProfileProps {
   mp: MP;
@@ -16,13 +17,19 @@ const MPProfile = ({ mp }: MPProfileProps) => {
     };
   };
 
+  // Find the MP's photo data
+  const mpPhoto = mpPhotoData.find(photo => photo.name === mp.name);
+  const imageUrl = mpPhoto?.portrait_link 
+    ? new URL(`../data/MP_Images/${mpPhoto.portrait_link}`, import.meta.url).href
+    : null;
+
   return (
     <div className="mp-profile">
       <div className="flex items-center gap-4">
-        {mp.imageUrl ? (
+        {imageUrl ? (
           <div className="relative w-28 h-28 aspect-square rounded-full overflow-hidden border-4 border-primary/10 bg-white dark:bg-gray-800">
             <img 
-              src={mp.imageUrl} 
+              src={imageUrl} 
               alt={mp.name}
               className="w-full h-full object-cover object-[center_10%]"
               onError={e => {
