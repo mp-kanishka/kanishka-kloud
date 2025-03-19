@@ -38,4 +38,7 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  optimizeDeps: {
+    include: ['@/data/mp_photo_data.json']
+  }
 }));

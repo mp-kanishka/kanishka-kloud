@@ -25,6 +25,7 @@ export const getMPImage = (mpName: string): string => {
     return FALLBACK_IMAGE;
   }
   
-  // Return the image URL as is - Vite will handle the path resolution
-  return imageUrl;
+  // Ensure we're using a local path
+  const localPath = imageUrl.replace(/^https?:\/\/[^/]+/, '');
+  return localPath;
 }; 
