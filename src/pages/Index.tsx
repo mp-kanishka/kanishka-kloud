@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Info, Download, Share2 } from "lucide-react";
+import { Info, Download, Twitter } from "lucide-react";
 import SearchBox from "@/components/SearchBox";
 import MPProfile from "@/components/MPProfile";
 import WordCloud, { WordCloudRef } from "@/components/WordCloud";
@@ -147,7 +147,7 @@ const Index = () => {
             className="p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-300"
             aria-label="Share on Twitter"
           >
-            <Share2 className="w-5 h-5" />
+            <Twitter className="w-5 h-5" />
           </button>
           <button
             onClick={handleSaveImage}
