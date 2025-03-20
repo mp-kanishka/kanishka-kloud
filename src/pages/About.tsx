@@ -20,7 +20,7 @@ const About = () => {
           <p>
             The source code is available{" "}
             <a 
-              href="example.com" 
+              href="https://github.com/mp-kanishka/kanishka-kloud" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-500 hover:text-blue-700 underline"
