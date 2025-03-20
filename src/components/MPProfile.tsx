@@ -1,6 +1,5 @@
 import { MP } from "@/types";
 import { getPartyColor } from "@/utils/partyColors";
-import { getMPImage } from "@/utils/imageImports";
 import { useState } from "react";
 
 interface MPProfileProps {
@@ -20,15 +19,13 @@ const MPProfile = ({ mp }: MPProfileProps) => {
     };
   };
 
-  const imageUrl = getMPImage(mp.name);
-
   return (
     <div className="mp-profile">
       <div className="flex items-center gap-4">
-        {imageUrl && !imageError ? (
+        {mp.imageUrl && !imageError ? (
           <div className="relative w-28 h-28 aspect-square rounded-full overflow-hidden border-4 border-primary/10 bg-white dark:bg-gray-800">
             <img 
-              src={imageUrl} 
+              src={mp.imageUrl} 
               alt={mp.name}
               className="w-full h-full object-cover object-[center_10%]"
               onError={() => setImageError(true)}

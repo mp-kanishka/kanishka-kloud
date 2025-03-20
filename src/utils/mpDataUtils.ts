@@ -1,6 +1,7 @@
 import mpData from '@/data/mps_data_20250307_093055.json';
 import mpPhotoData from '@/data/mp_photo_data.json';
 import { MP } from '@/types';
+import { getMPImage } from '@/utils/imageImports';
 
 // Type for the raw MP data from the JSON file
 interface RawMPData {
@@ -16,7 +17,25 @@ interface RawMPData {
 export const convertRawMPToMP = (rawMP: RawMPData): MP => {
   // Find the MP's photo data
   const mpPhoto = mpPhotoData.find(photo => photo.name === rawMP.name);
-  const imageUrl = mpPhoto?.portrait_link || null;
+  
+  // Try to get local image first
+  let imageUrl = null;
+  if (mpPhoto?.portrait_link) {
+    const localImageUrl = getMPImage(rawMP.name);
+    // Only use local image if it's not the fallback image
+    if (!localImageUrl.includes('data:image/svg+xml')) {
+      imageUrl = localImageUrl;
+    }
+  }
+  
+  // If no local image, use the online portrait URL
+  if (!imageUrl && rawMP.portrait_URL) {
+    // Update the URL format to use the new Parliament API format
+    const memberId = rawMP.portrait_URL.match(/\/members\/(\d+)\//)?.[1];
+    if (memberId) {
+      imageUrl = `https://members-api.parliament.uk/api/members/${memberId}/Portrait?cropType=OneOne&width=300&height=300`;
+    }
+  }
 
   return {
     id: rawMP.person_id,
@@ -34,33 +53,76 @@ export const getAllMPs = (): MP[] => {
   return (mpData as RawMPData[]).map(convertRawMPToMP);
 };
 
+// Simple Levenshtein distance calculation for fuzzy matching
+const levenshteinDistance = (a: string, b: string): number => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+
+  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+
+  for (let j = 1; j <= b.length; j++) {
+    for (let i = 1; i <= a.length; i++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1,
+        matrix[j - 1][i] + 1,
+        matrix[j - 1][i - 1] + cost
+      );
+    }
+  }
+
+  return matrix[b.length][a.length];
+};
+
 // Normalize text for searching
 const normalizeText = (text: string): string => {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+    .replace(/[^\w\s-]/g, '') // Only remove special characters except hyphens
     .replace(/\s+/g, ' ') // Normalize spaces
     .trim();
 };
 
-// Search MPs in the local data
+// Cache for normalized MP data - separate fields for better matching
+interface NormalizedMPData {
+  name: string;
+  constituency: string;
+  party: string;
+}
+
+let normalizedMPCache: { [key: string]: NormalizedMPData } = {};
+
+// Initialize the cache
+const initializeCache = () => {
+  if (Object.keys(normalizedMPCache).length === 0) {
+    getAllMPs().forEach(mp => {
+      normalizedMPCache[mp.id] = {
+        name: normalizeText(mp.name),
+        constituency: normalizeText(mp.constituency || ''),
+        party: normalizeText(mp.party || '')
+      };
+    });
+  }
+};
+
+// Search MPs with simple inclusion matching
 export const searchLocalMP = (searchTerm: string): MP[] => {
   if (!searchTerm.trim()) return [];
   
   const normalizedTerm = normalizeText(searchTerm);
-  const terms = normalizedTerm.split(' ').filter(term => term.length > 0);
   
   return getAllMPs().filter(mp => {
     const normalizedName = normalizeText(mp.name);
-    const normalizedConstituency = mp.constituency ? normalizeText(mp.constituency) : '';
-    const normalizedParty = mp.party ? normalizeText(mp.party) : '';
+    const normalizedConstituency = normalizeText(mp.constituency || '');
+    const normalizedParty = normalizeText(mp.party || '');
     
-    // Check if all search terms are found in any of the fields
-    return terms.every(term => 
-      normalizedName.includes(term) ||
-      normalizedConstituency.includes(term) ||
-      normalizedParty.includes(term)
-    );
+    // Show results if the search term appears in any field
+    return normalizedName.includes(normalizedTerm) ||
+           normalizedConstituency.includes(normalizedTerm) ||
+           normalizedParty.includes(normalizedTerm);
   });
 };
 
@@ -90,7 +152,7 @@ export const getMPById = (id: string): MP | undefined => {
   return undefined;
 };
 
-// Get an MP by name (fuzzy match)
+// Get an MP by name with simple inclusion matching
 export const getMPByName = (name: string): MP | undefined => {
   const normalizedName = normalizeText(name);
   return getAllMPs().find(mp => 

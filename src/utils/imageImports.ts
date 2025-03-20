@@ -16,14 +16,16 @@ const FALLBACK_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaH
 
 export const getMPImage = (mpName: string): string => {
   const mpPhoto = mpPhotoData.find(photo => photo.name === mpName);
-  if (!mpPhoto?.portrait_link) return FALLBACK_IMAGE;
   
-  // Get the image URL from our glob imports
-  const imageUrl = mpImageMap[mpPhoto.portrait_link];
-  if (!imageUrl) {
-    console.warn(`No image found for MP: ${mpName}`);
-    return FALLBACK_IMAGE;
+  // If we have a portrait_link, try to get the local image
+  if (mpPhoto?.portrait_link) {
+    const imageUrl = mpImageMap[mpPhoto.portrait_link];
+    if (imageUrl) {
+      return imageUrl;
+    }
   }
   
-  return imageUrl;
+  // If no local image is available, return the fallback
+  console.warn(`No local image found for MP: ${mpName}`);
+  return FALLBACK_IMAGE;
 }; 

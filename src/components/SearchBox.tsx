@@ -25,6 +25,8 @@ const SearchBox = ({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const [displayedResults, setDisplayedResults] = useState<MP[]>([]);
 
   // Function to get party text color
   const getPartyTextColor = (party?: string) => {
@@ -36,6 +38,7 @@ const SearchBox = ({
   const handleSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
+      setDisplayedResults([]);
       setShowResults(false);
       return;
     }
@@ -44,25 +47,49 @@ const SearchBox = ({
     try {
       const mps = await searchMP(searchQuery);
       setResults(mps);
+      // Start with first 10 results for immediate display
+      setDisplayedResults(mps.slice(0, 10));
       if (!isSelectionMode) {
         setShowResults(true);
       }
     } catch (error) {
       setResults([]);
+      setDisplayedResults([]);
       setShowResults(false);
     } finally {
       setSearching(false);
     }
   }, [isSelectionMode]);
 
-  // Debounced search effect
+  // Optimized debounced search effect with shorter delay
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      handleSearch(query);
-    }, 300);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    return () => clearTimeout(timeoutId);
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch(query);
+    }, 100); // Reduced debounce time for faster response
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [query, handleSearch]);
+
+  // Progressive loading of results
+  useEffect(() => {
+    if (results.length > 10) {
+      const timer = setTimeout(() => {
+        setDisplayedResults(prev => {
+          const nextBatch = results.slice(prev.length, prev.length + 10);
+          return [...prev, ...nextBatch];
+        });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [results]);
 
   // Document click handler
   useEffect(() => {
@@ -111,7 +138,7 @@ const SearchBox = ({
   };
 
   const getMPImageUrl = (mp: MP) => {
-    return getMPImage(mp.name);
+    return mp.imageUrl || getMPImage(mp.name);
   };
 
   return <div className="mp-search-container" ref={containerRef}>
@@ -121,7 +148,8 @@ const SearchBox = ({
           type="text" 
           value={query} 
           onChange={e => {
-            setQuery(e.target.value);
+            const newValue = e.target.value;
+            setQuery(newValue);
             if (isSelectionMode) {
               setIsSelectionMode(false);
             }
@@ -146,10 +174,10 @@ const SearchBox = ({
         </button>
       </div>
 
-      {showResults && results.length > 0 && !isSelectionMode && (
+      {showResults && (displayedResults.length > 0 || searching) && !isSelectionMode && (
         <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 animate-fade-in">
           <ul className="py-2 max-h-80 overflow-y-auto">
-            {results.map(mp => (
+            {displayedResults.map(mp => (
               <li 
                 key={mp.id} 
                 className="px-4 py-3 hover:bg-primary/10 cursor-pointer transition-colors" 
@@ -162,6 +190,7 @@ const SearchBox = ({
                         src={getMPImageUrl(mp)} 
                         alt={mp.name} 
                         className="h-full w-full object-cover"
+                        loading="lazy"
                         onError={e => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }} 
@@ -179,6 +208,12 @@ const SearchBox = ({
                 </div>
               </li>
             ))}
+            {searching && (
+              <li className="px-4 py-3 flex items-center justify-center">
+                <RotateCw className="h-4 w-4 animate-spin mr-2" />
+                <span className="text-sm text-muted-foreground">Loading more results...</span>
+              </li>
+            )}
           </ul>
         </div>
       )}
